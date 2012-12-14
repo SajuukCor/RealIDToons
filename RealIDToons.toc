@@ -1,0 +1,12 @@
+## Interface: 50100
+## Title: RealID Toons
+## Notes: Adds the toon name to the alert that your RealID friend has come online.
+## Author: Starinnia
+## Version: @project-version@
+## SavedVariables: RID_TOONS_FORMAT, RID_TOONS_LOCALFORMAT, RID_TOONS_HIDE_IC
+## X-Category: Chat & Communication
+## X-Email: codemaster2010 AT gmail DOT com
+
+Core.lua
+Options.lua
+
