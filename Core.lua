@@ -1,8 +1,8 @@
 --[[
 Author: Starinnia
 RealID Toons - Add character information to the BNet alerts your RealID friends generate
-$Date: 2012-09-23 10:19:57 -0500 (Sun, 23 Sep 2012) $
-$Revision: 141 $
+$Date: 2013-03-23 16:57:19 -0500 (Sat, 23 Mar 2013) $
+$Revision: 149 $
 Project Version: @project-version@
 contact: codemaster2010 AT gmail DOT com
 
@@ -209,6 +209,10 @@ do
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
 			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
 			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-D3:14:14:0:-1|t %s)", prefix, toon))
+		else
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
+			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-Battlenet:14:14:0:-1|t %s)", prefix, toon))
 		end
 	end
 end
@@ -279,6 +283,14 @@ do
 		elseif client == BNET_CLIENT_D3 then
 			local originalText = BNToastFrameTopLine:GetText()
 			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-D3icon:17|t %s", originalText, toon)
+			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
+				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
+				--make the animation glow effect fit the resized Toast popup
+				BNToastFrameGlowFrame.glow:SetWidth(BNToastFrame:GetWidth()+2)
+			end
+		else
+			local originalText = BNToastFrameTopLine:GetText()
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-Battleneticon:17|t %s", originalText, toon)
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
 				--make the animation glow effect fit the resized Toast popup
