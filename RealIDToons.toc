@@ -1,4 +1,4 @@
-## Interface: 50200
+## Interface: 50300
 ## Title: RealID Toons
 ## Notes: Adds the toon name to the alert that your RealID friend has come online.
 ## Author: Starinnia
