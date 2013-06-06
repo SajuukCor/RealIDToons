@@ -19,6 +19,8 @@ local select = select
 local BNET_CLIENT_SC2 = _G.BNET_CLIENT_SC2
 local BNET_CLIENT_WOW = _G.BNET_CLIENT_WOW
 local BNET_CLIENT_D3 = _G.BNET_CLIENT_D3
+local BNET_CLIENT_WTCG = BNET_CLIENT_WTCG
+local BN_TOAST_MAX_LINE_WIDTH = 196
 
 --constants
 local GRAY = 0.63*255
@@ -209,6 +211,10 @@ do
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
 			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
 			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-D3:14:14:0:-1|t %s)", prefix, toon))
+		elseif client == BNET_CLIENT_WTCG then
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
+			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-WTCG:14:14:0:-1|t %s)", prefix, toon))
 		else
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
 			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
@@ -283,6 +289,14 @@ do
 		elseif client == BNET_CLIENT_D3 then
 			local originalText = BNToastFrameTopLine:GetText()
 			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-D3icon:17|t %s", originalText, toon)
+			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
+				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
+				--make the animation glow effect fit the resized Toast popup
+				BNToastFrameGlowFrame.glow:SetWidth(BNToastFrame:GetWidth()+2)
+			end
+		elseif client == BNET_CLIENT_WTCG then
+			local originalText = BNToastFrameTopLine:GetText()
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-WTCGicon:17|t %s", originalText, toon)
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
 				--make the animation glow effect fit the resized Toast popup
