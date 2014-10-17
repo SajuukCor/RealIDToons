@@ -19,7 +19,8 @@ local select = select
 local BNET_CLIENT_SC2 = _G.BNET_CLIENT_SC2
 local BNET_CLIENT_WOW = _G.BNET_CLIENT_WOW
 local BNET_CLIENT_D3 = _G.BNET_CLIENT_D3
-local BNET_CLIENT_WTCG = BNET_CLIENT_WTCG
+local BNET_CLIENT_WTCG = _G.BNET_CLIENT_WTCG
+local BNET_CLIENT_HEROES = _G.BNET_CLIENT_HEROES
 local BN_TOAST_MAX_LINE_WIDTH = 196
 
 --constants
@@ -215,6 +216,10 @@ do
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
 			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
 			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-WTCG:14:14:0:-1|t %s)", prefix, toon))
+		elseif client == BNET_CLIENT_HEROES then
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
+			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-HotS:14:14:0:-1|t %s)", prefix, toon))
 		else
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
 			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
