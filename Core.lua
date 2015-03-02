@@ -435,8 +435,7 @@ end
 --this allows the addon to circumvent the issues with the FriendsFrame_ShowBNDropdown
 --call that is in ItemRef.lua of the default UI
 --|HRIDT:presenceID:name|h[name]|h
-local oldSetItemRef = SetItemRef
-function SetItemRef(link, text, button, chatFrame)
+local function SetItemRefHook(link, text, button, chatFrame)
 	local linktype, presenceID, name = strsplit(":", link)
 	if linktype == "RIDT" then
 		if button == "RightButton" then
@@ -452,7 +451,6 @@ function SetItemRef(link, text, button, chatFrame)
 		elseif button == "LeftButton" then
 			ChatFrame_SendSmartTell(name, chatFrame)
 		end
-	else
-		return oldSetItemRef(link, text, button, chatFrame)
 	end
 end
+hooksecurefunc("SetItemRef", SetItemRefHook)
