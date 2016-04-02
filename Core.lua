@@ -1,12 +1,12 @@
 --[[
 Author: Starinnia
 RealID Toons - Add character information to the BNet alerts your RealID friends generate
-$Date: 2013-03-23 16:57:19 -0500 (Sat, 23 Mar 2013) $
-$Revision: 149 $
+$Date: 2015-02-28 17:15:22 -0600 (Sat, 28 Feb 2015) $
+$Revision: 163 $
 Project Version: @project-version@
 contact: codemaster2010 AT gmail DOT com
 
-Copyright (c) 2010-2012 Michael J. Murray aka Lyte of Lothar(US)
+Copyright (c) 2010-2015 Michael J. Murray aka Lyte of Lothar(US)
 All rights reserved unless otherwise explicitly stated.
 ]]
 
@@ -58,7 +58,7 @@ $N - Friend note (always shown)
 local fmtTable = {}
 local function constructToonName(toonID, presenceID, isChat)
 	wipe(fmtTable) -- clear old info from the table
-	local _, toon, _, realm, _, faction, race, class, _, _, level = BNGetToonInfo(toonID)
+	local _, toon, _, realm, _, faction, race, class, _, _, level = BNGetGameAccountInfo(toonID)
 	local note = select(13, BNGetFriendInfoByID(presenceID))
 	local canCoop = CanCooperateWithToon(toonID)
 	
@@ -196,7 +196,7 @@ do
 	end
 	
 	function frame:BN_FRIEND_ACCOUNT_ONLINE(presenceID)
-		local _, presenceName, battleTag, isTagID, toon, toonID, client = BNGetFriendInfoByID(presenceID)
+		local _, presenceName, battleTag, isTagID, toon, toonID, client = BNGetFriendInfoBy(presenceID)
 		
 		if client == BNET_CLIENT_WOW then
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
@@ -331,10 +331,6 @@ do
 		ChatFrame_SendSmartTell(name, chatFrame)
 	end
 	
-	local function doConversation(dropdownbutton, presenceID, arg2, checked)
-		BNConversationInvite_NewConversation(presenceID)
-	end
-	
 	local function doInvite(dropdownbutton, name, arg2, checked)
 		InviteUnit(name)
 	end
@@ -369,13 +365,6 @@ do
 			pMenuInfo.func = doWhisper
 			pMenuInfo.arg1 = self.author
 			pMenuInfo.arg2 = self.chatFrame
-			UIDropDownMenu_AddButton(pMenuInfo, level)
-			
-			--create conversation
-			pMenuInfo.text = CREATE_CONVERSATION_WITH
-			pMenuInfo.func = doConversation
-			pMenuInfo.arg1 = self.presenceID
-			pMenuInfo.arg2 = nil
 			UIDropDownMenu_AddButton(pMenuInfo, level)
 			
 			--Invite
