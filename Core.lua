@@ -1,12 +1,12 @@
 --[[
 Author: Starinnia
 RealID Toons - Add character information to the BNet alerts your RealID friends generate
-$Date: 2015-02-28 17:15:22 -0600 (Sat, 28 Feb 2015) $
-$Revision: 163 $
+$Date: 2016-04-10 15:34:42 -0500 (Sun, 10 Apr 2016) $
+$Revision: 170 $
 Project Version: @project-version@
 contact: codemaster2010 AT gmail DOT com
 
-Copyright (c) 2010-2015 Michael J. Murray aka Lyte of Lothar(US)
+Copyright (c) 2010-2016 Michael J. Murray aka Lyte of Lothar(US)
 All rights reserved unless otherwise explicitly stated.
 ]]
 
@@ -21,7 +21,9 @@ local BNET_CLIENT_WOW = _G.BNET_CLIENT_WOW
 local BNET_CLIENT_D3 = _G.BNET_CLIENT_D3
 local BNET_CLIENT_WTCG = _G.BNET_CLIENT_WTCG
 local BNET_CLIENT_HEROES = _G.BNET_CLIENT_HEROES
+local BNET_CLIENT_APP = "App"
 local BN_TOAST_MAX_LINE_WIDTH = 196
+local BN_TOAST_TYPE_ONLINE = 1
 
 --constants
 local GRAY = 0.63*255
@@ -56,22 +58,23 @@ $n - Friend note (only shown in Chat alerts)
 $N - Friend note (always shown)
 --]]
 local fmtTable = {}
-local function constructToonName(toonID, presenceID, isChat)
+local function constructToonName(bnetID, isChat)
 	wipe(fmtTable) -- clear old info from the table
-	local _, toon, _, realm, _, faction, race, class, _, _, level = BNGetGameAccountInfo(toonID)
-	local note = select(13, BNGetFriendInfoByID(presenceID))
-	local canCoop = CanCooperateWithToon(toonID)
+    local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcastText, noteText, isRIDFriend, broadcastTime, canSoR = BNGetFriendInfoByID(bnetID)
+    local hasFocus, characterName, client2, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText2, broadcastTime2, canSoR, toonID2, bnetIDAccount, isGameAFK, isGameBusy  = BNGetGameAccountInfo(toonID)
+    
+	local canCoop = CanCooperateWithGameAccount(toonID)
 	
 	--sometimes BNGetToonInfo does not return full info
-	--when this occurs show a gray colored toon name only
-	if class == "" or realm == "" then
-		return format("(|cff%02x%02x%02x%s|r)", GRAY, GRAY, GRAY, toon)
+	--when this occurs show a gray colored characterName name only
+	if class == "" or realmName == "" then
+		return format("(|cff%02x%02x%02x%s|r)", GRAY, GRAY, GRAY, characterName)
 	end
 	
-	--$t - uncolored toon name
-	fmtTable.t = toon
+	--$t - uncolored characterName name
+	fmtTable.t = characterName
 	
-	--$T - class colored toon name
+	--$T - class colored characterName name
 	local eClass = reverseClassLookup[class]
 	local r, g, b
 	if _G.CUSTOM_CLASS_COLORS and _G.CUSTOM_CLASS_COLORS[eClass] then
@@ -81,10 +84,10 @@ local function constructToonName(toonID, presenceID, isChat)
 	end
 	
 	if isChat and canCoop then
-		--if same server and faction the toon name should be a playerLink
-		fmtTable.T = format("|Hplayer:%s|h|cff%02x%02x%02x%s|r|h", toon, r, g, b, toon)
+		--if same server and faction the characterName name should be a playerLink
+		fmtTable.T = format("|Hplayer:%s|h|cff%02x%02x%02x%s|r|h", characterName, r, g, b, characterName)
 	else
-		fmtTable.T = format("|cff%02x%02x%02x%s|r", r, g, b, toon)
+		fmtTable.T = format("|cff%02x%02x%02x%s|r", r, g, b, characterName)
 	end
 	
 	--$c - uncolored class name
@@ -94,14 +97,14 @@ local function constructToonName(toonID, presenceID, isChat)
 	fmtTable.C = format("|cff%02x%02x%02x%s|r", r, g, b, class)
 	
 	--$s - server only if different from player
-	if realm ~= MYREALM then
-		fmtTable.s = realm
+	if realmName ~= MYREALM then
+		fmtTable.s = realmName
 	else
 		fmtTable.s = ""
 	end
 	
 	--$S - always show server
-	fmtTable.S = realm
+	fmtTable.S = realmName
 	
 	--$F - always show faction icon
 	if faction == "Horde" then
@@ -134,13 +137,13 @@ local function constructToonName(toonID, presenceID, isChat)
 	
 	--$n - friend's note, only if alert is in chat
 	if isChat then
-		fmtTable.n = note
+		fmtTable.n = noteText
 	else
 		fmtTable.n = ""
 	end
 	
 	--$N - always show the friend's note
-	fmtTable.N = note
+	fmtTable.N = noteText
 	
 	if canCoop then
 		return gsub(RID_TOONS_LOCALFORMAT, "%$([A-Za-z])", fmtTable)
@@ -153,7 +156,7 @@ end
 --We can't hijack this alert since they have escaped the real name information
 --due to security concerns
 ChatFrame_AddMessageEventFilter("CHAT_MSG_BN_INLINE_TOAST_ALERT", function(self, event, msg, author, ...)
-	--the only toast we care about is FRIEND_ONLINE
+    --the only toast we care about is FRIEND_ONLINE
 	if msg == "FRIEND_ONLINE" then
 		return true, msg, author, ...
 	else
@@ -165,7 +168,7 @@ local info = ChatTypeInfo["BN_INLINE_TOAST_ALERT"]
 local savedChatFrames = {} --chat frames that register the BN Alerts
 local frame = CreateFrame("FRAME")
 frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("BN_FRIEND_ACCOUNT_ONLINE")
+frame:RegisterEvent("BN_FRIEND_INFO_CHANGED")
 frame:RegisterEvent("UPDATE_CHAT_WINDOWS")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -189,41 +192,82 @@ function frame:ADDON_LOADED(addon)
 end
 
 do
+    --cache of online friends
+    local onlineFriends = {}
+    
+    --helper function for printing BNet alerts to every frame that has them registered
 	local function printToFrames(msg)
 		for i, frame in ipairs(savedChatFrames) do
 			frame:AddMessage(msg, info.r, info.g, info.b, info.id)
 		end
 	end
 	
-	function frame:BN_FRIEND_ACCOUNT_ONLINE(presenceID)
-		local _, presenceName, battleTag, isTagID, toon, toonID, client = BNGetFriendInfoBy(presenceID)
-		
+	function frame:BN_FRIEND_INFO_CHANGED(friendListIndex)
+        -- no index passed by event, skip it
+        if not friendListIndex then
+            return
+        end
+        
+        --get basic friend info
+        local bnetID, presenceName, battleTag, isBattleTagPresence, toonName, gameAccountID, client, isOnline = BNGetFriendInfo(friendListIndex)
+        
+        --if not online, do not display anything, and clear our online cache
+        if not isOnline then
+            onlineFriends[bnetID] = nil
+            return
+        end
+        
+        local messageBase = BN_INLINE_TOAST_FRIEND_ONLINE
+        
+        --if the friend was online
+        if onlineFriends[bnetID] then
+            --and the same client
+            if onlineFriends[bnetID] == client then
+                --do nothing
+                return
+            else
+                --otherwise, update the cached client
+                onlineFriends[bnetID] = client
+                
+                --suppress messages about the BNet App, if the friend was already online
+                --friends are considered in the App when switching WoW characters
+                --this gets spammy
+                if client == BNET_CLIENT_APP then
+                    return
+                end
+            end
+        else
+            --if they were not already online, cache the current client
+            onlineFriends[bnetID] = client
+        end
+        
+        
 		if client == BNET_CLIENT_WOW then
-			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
-			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
 			--add a message to the passed in chat frame that looks like the regular toast
-			printToFrames(format("%s %s", prefix, constructToonName(toonID, presenceID, true)))
+			printToFrames(format("%s %s", prefix, constructToonName(bnetID, true)))
 		elseif client == BNET_CLIENT_SC2 then
 			--construct the playerlink and message prefix seperately for easier debugging
-			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
-			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
-			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-SC2:14:14:0:-1|t %s)", prefix, toon))
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-SC2:14:14:0:-1|t)", prefix))
 		elseif client == BNET_CLIENT_D3 then
-			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
-			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
-			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-D3:14:14:0:-1|t %s)", prefix, toon))
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-D3:14:14:0:-1|t)", prefix))
 		elseif client == BNET_CLIENT_WTCG then
-			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
-			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
-			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-WTCG:14:14:0:-1|t %s)", prefix, toon))
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-WTCG:14:14:0:-1|t)", prefix))
 		elseif client == BNET_CLIENT_HEROES then
-			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
-			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
-			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-HotS:14:14:0:-1|t %s)", prefix, toon))
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-HotS:14:14:0:-1|t)", prefix))
 		else
-			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", presenceID, presenceName, presenceName)
-			local prefix = format(BN_INLINE_TOAST_FRIEND_ONLINE, playerlink)
-			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-Battlenet:14:14:0:-1|t %s)", prefix, toon))
+			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-Battlenet:14:14:0:-1|t)", prefix))
 		end
 	end
 end
@@ -263,18 +307,20 @@ do
 	hooksecurefunc("BNToastFrame_Show", function()
 		BNToastFrame:SetWidth(250) -- Need to reset to original value for popups we are not modifying
 		BNToastFrameGlowFrame.glow:SetWidth(252)
-		if BNToastFrame.toastType ~= 1 then return end
+        print("toast frame show")
+		if BNToastFrame.toastType ~= BN_TOAST_TYPE_ONLINE then return end
 		
 		--hide Blizzard's game/toon info line
 		BNToastFrameMiddleLine:Hide()
 		BNToastFrameBottomLine:SetPoint("TOPLEFT", BNToastFrameTopLine, "BOTTOMLEFT", 0, -4);
 		BNToastFrame:SetHeight(50);
 		
-		local _, _, _, _, toon, toonID, client = BNGetFriendInfoByID(BNToastFrame.toastData)
+		local hasFocus, characterName, client = BNGetGameAccountInfo(BNToastFrame.toastData)
 		
 		if client == BNET_CLIENT_WOW then
+            print("WoW")
 			local originalText = BNToastFrameTopLine:GetText()
-			local toonName = constructToonName(toonID, BNToastFrame.toastData, false)
+			local toonName = constructToonName(BNToastFrame.toastData, false)
 			BNToastFrameTopLine:SetFormattedText("%s %s", originalText, toonName)
 			--size the popup to match the text
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
@@ -284,7 +330,7 @@ do
 			end
 		elseif client == BNET_CLIENT_SC2 then
 			local originalText = BNToastFrameTopLine:GetText()
-			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-Sc2icon:17|t %s", originalText, toon)
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-Sc2icon:17|t", originalText)
 			--size the popup to match the text
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
@@ -293,7 +339,7 @@ do
 			end
 		elseif client == BNET_CLIENT_D3 then
 			local originalText = BNToastFrameTopLine:GetText()
-			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-D3icon:17|t %s", originalText, toon)
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-D3icon:17|t", originalText)
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
 				--make the animation glow effect fit the resized Toast popup
@@ -301,15 +347,23 @@ do
 			end
 		elseif client == BNET_CLIENT_WTCG then
 			local originalText = BNToastFrameTopLine:GetText()
-			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-WTCGicon:17|t %s", originalText, toon)
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-WTCGicon:17|t", originalText)
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
 				--make the animation glow effect fit the resized Toast popup
 				BNToastFrameGlowFrame.glow:SetWidth(BNToastFrame:GetWidth()+2)
 			end
-		else
+		elseif client == BNET_CLIENT_HEROES then
 			local originalText = BNToastFrameTopLine:GetText()
-			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-Battleneticon:17|t %s", originalText, toon)
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-HotSicon:17|t", originalText)
+			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
+				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
+				--make the animation glow effect fit the resized Toast popup
+				BNToastFrameGlowFrame.glow:SetWidth(BNToastFrame:GetWidth()+2)
+			end
+        else
+			local originalText = BNToastFrameTopLine:GetText()
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-Battleneticon:17|t", originalText)
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
 				--make the animation glow effect fit the resized Toast popup
@@ -372,7 +426,7 @@ do
 			pMenuInfo.func = doInvite
 			pMenuInfo.arg1 = self.character
 			pMenuInfo.arg2 = nil
-			pMenuInfo.disabled = (not CanCooperateWithToon(self.characterID)) and 1
+			pMenuInfo.disabled = (not CanCooperateWithGameAccount(self.characterID)) and 1
 			UIDropDownMenu_AddButton(pMenuInfo, level)
 			
 			pMenuInfo.disabled = nil
@@ -443,3 +497,16 @@ local function SetItemRefHook(link, text, button, chatFrame)
 	end
 end
 hooksecurefunc("SetItemRef", SetItemRefHook)
+
+--Hook the SetHyperlink method too, to squash Invalid Link errors
+do
+    local SetHyperlink = ItemRefTooltip.SetHyperlink
+	function ItemRefTooltip:SetHyperlink(link, ...)
+        local linktype, presenceID, name = strsplit(":", link)
+        if linktype and linktype == "RIDT" then
+            --noop
+		else
+			SetHyperlink(self, link, ...)
+		end
+	end
+end
