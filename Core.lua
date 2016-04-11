@@ -307,7 +307,6 @@ do
 	hooksecurefunc("BNToastFrame_Show", function()
 		BNToastFrame:SetWidth(250) -- Need to reset to original value for popups we are not modifying
 		BNToastFrameGlowFrame.glow:SetWidth(252)
-        print("toast frame show")
 		if BNToastFrame.toastType ~= BN_TOAST_TYPE_ONLINE then return end
 		
 		--hide Blizzard's game/toon info line
@@ -318,7 +317,6 @@ do
 		local hasFocus, characterName, client = BNGetGameAccountInfo(BNToastFrame.toastData)
 		
 		if client == BNET_CLIENT_WOW then
-            print("WoW")
 			local originalText = BNToastFrameTopLine:GetText()
 			local toonName = constructToonName(BNToastFrame.toastData, false)
 			BNToastFrameTopLine:SetFormattedText("%s %s", originalText, toonName)
