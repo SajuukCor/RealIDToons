@@ -21,6 +21,7 @@ local BNET_CLIENT_WOW = _G.BNET_CLIENT_WOW
 local BNET_CLIENT_D3 = _G.BNET_CLIENT_D3
 local BNET_CLIENT_WTCG = _G.BNET_CLIENT_WTCG
 local BNET_CLIENT_HEROES = _G.BNET_CLIENT_HEROES
+local BNET_CLIENT_OVERWATCH = _G.BNET_CLIENT_OVERWATCH
 local BNET_CLIENT_APP = "App"
 local BN_TOAST_MAX_LINE_WIDTH = 196
 local BN_TOAST_TYPE_ONLINE = 1
@@ -264,7 +265,11 @@ do
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
 			local prefix = format(messageBase, playerlink)
 			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-HotS:14:14:0:-1|t)", prefix))
-		else
+		elseif client == BNET_CLIENT_OVERWATCH then
+            local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
+			local prefix = format(messageBase, playerlink)
+			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-Overwatch:14:14:0:-1|t)", prefix))
+        else
 			local playerlink = format("|HRIDT:%s:%s|h[%s]|h", bnetID, presenceName, presenceName)
 			local prefix = format(messageBase, playerlink)
 			printToFrames(format("%s (|TInterface\\ChatFrame\\UI-ChatIcon-Battlenet:14:14:0:-1|t)", prefix))
@@ -354,6 +359,14 @@ do
 		elseif client == BNET_CLIENT_HEROES then
 			local originalText = BNToastFrameTopLine:GetText()
 			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-HotSicon:17|t", originalText)
+			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
+				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
+				--make the animation glow effect fit the resized Toast popup
+				BNToastFrameGlowFrame.glow:SetWidth(BNToastFrame:GetWidth()+2)
+			end
+        elseif client == BNET_CLIENT_OVERWATCH then
+			local originalText = BNToastFrameTopLine:GetText()
+			BNToastFrameTopLine:SetFormattedText("%s - |TInterface\\FriendsFrame\\Battlenet-Overwatchicon:17|t", originalText)
 			if (BNToastFrameTopLine:GetStringWidth()) > (BN_TOAST_MAX_LINE_WIDTH - 10) then
 				BNToastFrame:SetWidth(FRAME_PADDING+BNToastFrameTopLine:GetStringWidth())
 				--make the animation glow effect fit the resized Toast popup
