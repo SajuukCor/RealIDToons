@@ -22,25 +22,25 @@ do
 	if LOCALE ~= "enUS" and LOCALE ~= "enGB" then L = {} end
 	
 	if LOCALE == "esES" then
---@localization(locale="esES", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="esES", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "esMX" then
---@localization(locale="esMX", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="esMX", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "deDE" then
---@localization(locale="deDE", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="deDE", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "ruRU" then
---@localization(locale="ruRU", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="ruRU", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "frFR" then
---@localization(locale="frFR", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="frFR", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "koKR" then
---@localization(locale="koKR", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="koKR", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "zhCN" then
---@localization(locale="zhCN", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="zhCN", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "zhTW" then
---@localization(locale="zhTW", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="zhTW", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "ptBR" then
---@localization(locale="ptBR", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="ptBR", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	elseif LOCALE == "itIT" then
---@localization(locale="itIT", format="lua_additive_table", handle-unlocalized="comment", table-name="\t\tL")@
+--@localization(locale="itIT", format="lua_additive_table", handle-unlocalized="comment", table-name="L")@
 	end
 	
 	L = setmetatable(L or {}, {__index = function(t, key)
